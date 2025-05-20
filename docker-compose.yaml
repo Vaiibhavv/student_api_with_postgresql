@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: postgres:13
+    container_name: students_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: students_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
+## docker-compose up -d
+## docker ps
+## to see the database , docker exec -it students_db psql -U postgres -d students_db
+## to see all the tables  \dt
