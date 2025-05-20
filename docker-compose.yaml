@@ -20,3 +20,4 @@ volumes:
 ## docker ps
 ## to see the database , docker exec -it students_db psql -U postgres -d students_db
 ## to see all the tables  \dt
+## https://musical-waffle-9r74v75w54qhqgg-8080.app.github.dev/swagger/index.html

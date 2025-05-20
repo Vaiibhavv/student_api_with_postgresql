@@ -1,0 +1,142 @@
+basePath: /
+definitions:
+  models.Student:
+    properties:
+      age:
+        type: integer
+      grade:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: musical-waffle-9r74v75w54qhqgg-8080.app.github.dev
+info:
+  contact:
+    email: your-email@example.com
+    name: Vaiibhavv
+  description: This is a REST API for managing students.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Student API
+  version: "1.0"
+paths:
+  /students:
+    get:
+      description: Retrieve all student records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Student'
+            type: array
+      summary: Get all students
+      tags:
+      - students
+    post:
+      consumes:
+      - application/json
+      description: Add a new student record to the database
+      parameters:
+      - description: Student Data
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/models.Student'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a new student
+      tags:
+      - students
+  /students/{id}:
+    delete:
+      description: Delete a student by ID
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Delete failed
+          schema:
+            type: string
+      summary: Delete a student
+      tags:
+      - students
+    get:
+      description: Get details of a specific student
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Student'
+        "404":
+          description: Student not found
+          schema:
+            type: string
+      summary: Get a student by ID
+      tags:
+      - students
+    put:
+      consumes:
+      - application/json
+      description: Update student information by ID
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Student
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/models.Student'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Update failed
+          schema:
+            type: string
+      summary: Update a student
+      tags:
+      - students
+schemes:
+- https
+swagger: "2.0"

@@ -10,6 +10,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// CreateStudent godoc
+// @Summary Create a new student
+// @Description Add a new student record to the database
+// @Tags students
+// @Accept json
+// @Produce json
+// @Param student body models.Student true "Student Data"
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /students [post]
 func CreateStudent(w http.ResponseWriter, r *http.Request) {
 	var student models.Student
 	json.NewDecoder(r.Body).Decode(&student)
@@ -30,10 +40,16 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-
 	json.NewEncoder(w).Encode(response)
 }
 
+// GetStudents godoc
+// @Summary Get all students
+// @Description Retrieve all student records
+// @Tags students
+// @Produce json
+// @Success 200 {array} models.Student
+// @Router /students [get]
 func GetStudents(w http.ResponseWriter, r *http.Request) {
 	conn, _ := db.Connect()
 	defer conn.Close()
@@ -51,6 +67,15 @@ func GetStudents(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(students)
 }
 
+// GetStudent godoc
+// @Summary Get a student by ID
+// @Description Get details of a specific student
+// @Tags students
+// @Produce json
+// @Param id path int true "Student ID"
+// @Success 200 {object} models.Student
+// @Failure 404 {string} string "Student not found"
+// @Router /students/{id} [get]
 func GetStudent(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	conn, _ := db.Connect()
@@ -68,6 +93,17 @@ func GetStudent(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(s)
 }
 
+// UpdateStudent godoc
+// @Summary Update a student
+// @Description Update student information by ID
+// @Tags students
+// @Accept json
+// @Produce json
+// @Param id path int true "Student ID"
+// @Param student body models.Student true "Updated Student"
+// @Success 200 {object} map[string]string
+// @Failure 500 {string} string "Update failed"
+// @Router /students/{id} [put]
 func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	var s models.Student
@@ -84,9 +120,23 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response := map[string]interface{}{
+		"message": "Student Updated",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+
 	w.WriteHeader(http.StatusOK)
 }
 
+// DeleteStudent godoc
+// @Summary Delete a student
+// @Description Delete a student by ID
+// @Tags students
+// @Param id path int true "Student ID"
+// @Success 204 "No Content"
+// @Failure 500 {string} string "Delete failed"
+// @Router /students/{id} [delete]
 func DeleteStudent(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	conn, _ := db.Connect()
