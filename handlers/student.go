@@ -7,6 +7,7 @@ import (
 	"students_api/db"
 	"students_api/models"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -22,12 +23,23 @@ import (
 // @Router /students [post]
 func CreateStudent(w http.ResponseWriter, r *http.Request) {
 	var student models.Student
-	json.NewDecoder(r.Body).Decode(&student)
+	err := json.NewDecoder(r.Body).Decode(&student)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	}
+
+	// validate the json response
+	validate := validator.New()
+	err = validate.Struct(student)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	conn, _ := db.Connect()
 	defer conn.Close()
 
-	err := conn.QueryRow("INSERT INTO students (name, age, grade) VALUES ($1, $2, $3) RETURNING id",
+	err = conn.QueryRow("INSERT INTO students (name, age, grade) VALUES ($1, $2, $3) RETURNING id",
 		student.Name, student.Age, student.Grade).Scan(&student.ID)
 
 	if err != nil {
