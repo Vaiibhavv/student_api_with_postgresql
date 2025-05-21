@@ -24,7 +24,7 @@ const docTemplate = `{
     "paths": {
         "/students": {
             "get": {
-                "description": "Retrieve all student records",
+                "description": "Retrieve all student records. You can filter by name, age, and grade.",
                 "produces": [
                     "application/json"
                 ],
@@ -32,6 +32,26 @@ const docTemplate = `{
                     "students"
                 ],
                 "summary": "Get all students",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by student name (optional)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by student age (optional)",
+                        "name": "age",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by student grade (optional)",
+                        "name": "grade",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -39,6 +59,15 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/models.Student"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     }
@@ -198,6 +227,11 @@ const docTemplate = `{
     "definitions": {
         "models.Student": {
             "type": "object",
+            "required": [
+                "age",
+                "grade",
+                "name"
+            ],
             "properties": {
                 "age": {
                     "type": "integer"

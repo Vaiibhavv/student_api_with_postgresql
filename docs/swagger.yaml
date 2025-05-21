@@ -10,6 +10,10 @@ definitions:
         type: integer
       name:
         type: string
+    required:
+    - age
+    - grade
+    - name
     type: object
 host: musical-waffle-9r74v75w54qhqgg-8080.app.github.dev
 info:
@@ -25,7 +29,21 @@ info:
 paths:
   /students:
     get:
-      description: Retrieve all student records
+      description: Retrieve all student records. You can filter by name, age, and
+        grade.
+      parameters:
+      - description: Filter by student name (optional)
+        in: query
+        name: name
+        type: string
+      - description: Filter by student age (optional)
+        in: query
+        name: age
+        type: integer
+      - description: Filter by student grade (optional)
+        in: query
+        name: grade
+        type: string
       produces:
       - application/json
       responses:
@@ -35,6 +53,12 @@ paths:
             items:
               $ref: '#/definitions/models.Student'
             type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Get all students
       tags:
       - students

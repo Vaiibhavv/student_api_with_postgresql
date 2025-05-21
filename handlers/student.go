@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"students_api/db"
@@ -57,16 +58,50 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 
 // GetStudents godoc
 // @Summary Get all students
-// @Description Retrieve all student records
+// @Description Retrieve all student records. You can filter by name, age, and grade.
 // @Tags students
 // @Produce json
+// @Param name query string false "Filter by student name (optional)"
+// @Param age query int false "Filter by student age (optional)"
+// @Param grade query string false "Filter by student grade (optional)"
 // @Success 200 {array} models.Student
+// @Failure 500 {object} map[string]string
 // @Router /students [get]
 func GetStudents(w http.ResponseWriter, r *http.Request) {
 	conn, _ := db.Connect()
 	defer conn.Close()
+	//---- Get query params ----
+	queryParams := r.URL.Query()
+	name := queryParams.Get("name")
+	age := queryParams.Get("age")
+	grade := queryParams.Get("grade")
 
-	rows, _ := conn.Query("SELECT id, name, age, grade FROM students")
+	// --- base query
+	query := "select id, name, age, grade from students where 1=1"
+	args := []interface{}{}
+	argsIndex := 1
+
+	if name != "" {
+		query += fmt.Sprintf(" AND name ILIKE $%d", argsIndex)
+		args = append(args, "%"+name+"%")
+		argsIndex++
+	}
+	if age != "" {
+		query += fmt.Sprintf(" AND age=$%d", argsIndex)
+		args = append(args, age)
+		argsIndex++
+	}
+	if grade != "" {
+		query += fmt.Sprintf(" AND grade=$%d", argsIndex)
+		args = append(args, grade)
+		argsIndex++
+	}
+
+	rows, err := conn.Query(query, args...)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	defer rows.Close()
 
 	var students []models.Student
@@ -75,7 +110,7 @@ func GetStudents(w http.ResponseWriter, r *http.Request) {
 		rows.Scan(&s.ID, &s.Name, &s.Age, &s.Grade)
 		students = append(students, s)
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(students)
 }
 
@@ -119,12 +154,22 @@ func GetStudent(w http.ResponseWriter, r *http.Request) {
 func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	var s models.Student
-	json.NewDecoder(r.Body).Decode(&s)
+	err := json.NewDecoder(r.Body).Decode(&s)
+	if err != nil {
+		http.Error(w, "invalid response", http.StatusBadRequest)
+	}
+	//validate the json
+	validate := validator.New()
+	err = validate.Struct(s)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	conn, _ := db.Connect()
 	defer conn.Close()
 
-	_, err := conn.Exec("UPDATE students SET name = $1, age = $2, grade = $3 WHERE id = $4",
+	_, err = conn.Exec("UPDATE students SET name = $1, age = $2, grade = $3 WHERE id = $4",
 		s.Name, s.Age, s.Grade, id)
 
 	if err != nil {
